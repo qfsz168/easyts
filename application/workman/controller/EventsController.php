@@ -6,7 +6,6 @@
  */
 //declare(ticks=1);
 use \GatewayWorker\Lib\Gateway;
-use think\facade\Cache;
 
 /**
  * 主逻辑
@@ -38,6 +37,8 @@ class EventsController
 	 */
 	public static function onMessage($client_id, $message)
 	{
+		echo $message;
+		Gateway::sendToClient($client_id, "you say :{$message}");
 	}
 
 	/**
@@ -47,25 +48,6 @@ class EventsController
 	 */
 	public static function onClose($client_id)
 	{
-		$arrayPushOLP = Cache::remember("array_push_olp", []);
-		foreach ($arrayPushOLP as $k => $v)
-		{
-			if ($v["client_id"] == $client_id)
-			{
-				unset($arrayPushOLP[$k]);
-			}
-			Cache::set("array_push_olp", $arrayPushOLP);
-		}
-
-		$arrayPushSysInfo = Cache::remember("array_push_sys_info", []);
-		foreach ($arrayPushSysInfo as $k => $v)
-		{
-			if ($v["client_id"] == $client_id)
-			{
-				unset($arrayPushSysInfo[$k]);
-			}
-			Cache::set("array_push_sys_info", $arrayPushSysInfo);
-		}
 	}
 
 }
