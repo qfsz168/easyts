@@ -1,0 +1,14 @@
+#sidebar-nav {
+	display: block;
+	float: left;
+}
+
+#dashboard-menu li{
+	margin: 10px;
+	font-size: 16px;
+	border-bottom:1px solid #E9E7E7;
+}
+
+.dropdown{
+	margin: 5px;
+}

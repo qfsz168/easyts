@@ -1,0 +1,82 @@
+{include file="public/header" /}
+
+<script src="/static/lib/laytpl.js"></script>
+
+<style>
+	.border-bottom-only {
+		border-left-style: none !important;
+		border-top-style: none !important;
+		border-right-style: none !important;
+		margin-top: 1px !important;
+	}
+</style>
+
+<div class="row ">
+	<article class="col-12 mt15">
+		<div class="list-group mb15" id="listContent">
+		</div>
+		<div id="clPage"></div>
+	</article>
+</div>
+
+
+<!--模板-->
+<script type="text/html" id="listTpl">
+	{{#  $.each(d.list, function(i, v){ }}
+	<a href="/index/Article/content/id/{{ v.id }}.html" target="_blank" class="list-group-item list-group-item-action border-bottom-only">
+		<div class="row align-items-center">
+			<div class="col-12 col-sm-12 col-md-9 col-lg-9 col-xl-10">
+				<div class="row">
+					<div class="col text-dark d-inline-block text-truncate"><strong>{{ v.title }}</strong></div>
+				</div>
+				<div class="row">
+					<div class="col text-secondary "><small>{{ v.content }}</small></div>
+				</div>
+			</div>
+			<div class="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-2 text-secondary text-right"><small>{{ v.create_time }}</small></div>
+		</div>
+	</a>
+	{{#  }); }}
+	{{#  if(d.list.length === 0){ }}
+	<div class="alert alert-success alert-dismissable">
+		<button type="button" class="close" data-dismiss="alert">&times;</button>
+		暂无内容
+	</div>
+	{{#  } }}
+</script>
+
+<script>
+    var pgid = "{$pgid}";
+    var gid = "{$gid}"; //栏目ID
+    $("#nav-" + pgid).addClass("active");
+    $("#nav-" + gid).addClass("active");
+
+    //初始化数据
+    getList();
+
+    /**
+     * 获取列表数据
+     * @param map 类型
+     * @param pNo 页码
+     * @param pSize 页长
+     */
+    function getList() {
+        $.post("/index/Article/apiList", {pageNo: 1, pageSize: 2000, gid: gid}, function (res) {
+            renderTpl(res.data);
+        });
+    }
+
+    /**
+     * 渲染模板
+     * @param data
+     */
+    function renderTpl(data) {
+        laytpl($("#listTpl").html()).render(data, function (html) {
+            $("#listContent").html(html);
+        });
+    }
+
+</script>
+
+
+{include file="public/footer" /}

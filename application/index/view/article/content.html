@@ -1,0 +1,40 @@
+{include file="public/header" /}
+
+<style>
+	.jumbotron {
+		padding: 1rem 1rem;
+	}
+	
+</style>
+
+<div class="row mt15">
+	<div class="col ">
+		<div class="jumbotron jumbotron-fluid bgc-title">
+			<div class="container">
+				<h4>{$ai.title}</h4>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row mb15">
+	<article class="col-12 col-sm-12 col-md-9 col-lg-9 col-xl-10">
+		{$ai.content}
+	</article>
+	<aside class="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-2">
+		<img src="" alt="" id="imgCover" style="width:100%;height:500px;">
+	</aside>
+</div>
+
+<script>
+    var pgid = "{$pgid}";
+    $(function () {
+        $("#nav-"+pgid).addClass("active");
+    });
+	
+    $.post("/index/Article/getCover", {id: '{$ai.id}'}, function (res) {
+        $("#imgCover").attr("src", res.data);
+    });
+</script>
+
+{include file="public/footer" /}

@@ -9,6 +9,9 @@
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 
+//**开启严格模式
+declare(strict_types=1);
+
 // [ 应用入口文件 ]
 namespace think;
 

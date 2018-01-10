@@ -1,0 +1,229 @@
+{include file="public/header"}
+
+<link rel="stylesheet" href="/static/lib/layui/css/layui.css">
+<script src="/static/lib/layui/layui.all.js"></script>
+
+<style>
+	.my-form-control {
+		display: inline-block !important;
+		width: auto !important;
+	}
+</style>
+
+
+<div class="card">
+	<div class="card-header">
+		<div class="row">
+			<div class="col-5">
+				<span>栏目分类: </span>
+				<select class="form-control my-form-control" id="cg1" name="cg1">
+					<option value="">一级栏目</option>
+					{foreach name="glist" item="vo"}
+					<option value="{$vo.id}">{$vo.title}</option>
+					{/foreach}
+				</select>
+				<select class="form-control my-form-control" id="cg2" name="cg2">
+					<option value="">二级栏目</option>
+				</select>
+			</div>
+			<div class="col-7 align-self-end">
+				<input type="text" class="form-control my-form-control" id="st">
+				<input type="text" class="form-control my-form-control" id="et">
+				<button class="btn btn-primary btn-sm" id="btnTimeSearch">时间段查询</button>
+			</div>
+		</div>
+	</div>
+	<div class="card-body">
+		<div class="table-responsive">
+			<table class="table table-hover">
+				<thead>
+				<tr>
+					<th>文章标题</th>
+					<th>文章摘要</th>
+					<th>发布时间</th>
+					<th>所属分组</th>
+					<th>操作</th>
+				</tr>
+				</thead>
+				<tbody id="listContent">
+				</tbody>
+			</table>
+		</div>
+		<div id="clPage"></div>
+	</div>
+</div>
+
+<script type="text/javascript">
+
+    var listCount; //总条数
+    var listData; //列表数据
+
+    var pageSize = 10; //页长
+    var pageNo = 1; //页码
+    var gid; //栏目ID
+    var startTime, endTime;//时间范围
+
+    //初始化数据
+    getList({
+        "gid": gid,
+        "startTime": startTime,
+        "endTime": endTime,
+    }, pageNo, pageSize);
+
+    //绑定日期插件
+    layui.laydate.render({elem: '#st', type: 'datetime'});
+    layui.laydate.render({elem: '#et', type: 'datetime'});
+
+    //一级栏目(联动)
+    $('#cg1').change(function () {
+
+        gid = $(this).val();
+
+        getList({
+            "gid": gid,
+            "startTime": startTime,
+            "endTime": endTime,
+        }, pageNo, pageSize);
+
+        post("/adm/news/apiGetCG2", {id: $(this).val()}, function (data) {
+            var html = '';
+            html += '<option value="">二级栏目</option>';
+            for (x in data) {
+                html += "<option value=\"" + data[x]['id'] + "\">" + data[x]['title'] + "</option>"
+            }
+            $("#cg2").html(html);
+        });
+
+    });
+
+    //二级栏目
+    $('#cg2').change(function () {
+
+        gid = $(this).val();
+
+        getList({
+            "gid": gid,
+            "startTime": startTime,
+            "endTime": endTime,
+        }, pageNo, pageSize);
+
+    });
+
+    //时间
+    $("#btnTimeSearch").click(function () {
+
+        startTime = $("#st").val();
+        endTime = $("#et").val();
+
+        getList({
+            "gid": gid,
+            "startTime": startTime,
+            "endTime": endTime,
+        }, pageNo, pageSize);
+
+    });
+
+    /**
+     * 获取列表数据
+     * @param map 类型
+     * @param pNo 页码
+     * @param pSize 页长
+     */
+    function getList(map, pNo, pSize) {
+        map.pageNo = pNo;
+        map.pageSize = pSize;
+        post("apiGetList", map, function (data) {
+
+            listData = data;
+            listCount = data.count;
+
+            //执行一个laypage实例
+            layui.laypage.render({
+                elem: 'clPage', //注意，这里的 test1 是 ID，不用加 # 号
+                count: listCount, //数据总数，从服务端得到
+                curr: pageNo, //当前页
+                limit: pageSize, //每页显示条数
+                limits: [5, 10, 20, 30, 40, 50], //每页条数的选择项。如果 layout 参数开启了 limit，则会出现每页条数的select选择框
+                groups: 5, //连续出现的页码个数
+                prev: "上页",//自定义“上一页”的内容，支持传入普通文本和HTML	String	上一页
+                next: "下页",//自定义“下一页”的内容，同上	String	下一页
+                first: "首页",//自定义“首页”的内容，同上	String	1
+                last: "尾页",//自定义“尾页”的内容，同上	String	总页数值
+                layout: ['prev', 'page', 'next', 'skip', 'count', 'limit'],//自定义排版。可选值有：count（总条目输区域）、prev（上一页区域）、page（分页区域）、next（下一页区域）、limit（条目选项区域）、 、skip（快捷跳页区域）
+                theme: '#24B45A',//颜色
+                jump: function (obj, first) {
+                    pageNo = obj.curr;
+                    pageSize = obj.limit;
+
+                    //首次不执行
+                    if (first) {
+                        return false;
+                    }
+
+                    getList({
+                        "gid": gid,
+                        "startTime": startTime,
+                        "endTime": endTime,
+                    }, obj.curr, obj.limit);
+                }
+            });
+
+            renderTpl(data);
+
+        });
+    }
+
+    /**
+     * 渲染模板
+     * @param data
+     */
+    function renderTpl(data) {
+        layui.laytpl($("#listTpl").html()).render(data, function (html) {
+            $("#listContent").html(html);
+        });
+    }
+
+    function artDel(id) {
+        layer.confirm("确认要删除吗?", function (index) {
+            post("apiDel", {id: id}, function (data) {
+                getList({
+                    "gid": gid,
+                    "startTime": startTime,
+                    "endTime": endTime,
+                }, pageNo, pageSize);
+            });
+            layer.close(index);
+        });
+    }
+
+    function setSy(id) {
+        post("/adm/Config/apiSetSy", {id: id}, function (data) {
+            $(".setSy" ).removeClass("disabled");
+            $("#setSy-" + id).addClass("disabled");
+        });
+    }
+
+</script>
+
+<!--模板-->
+<script type="text/html" id="listTpl">
+	{{#  $.each(d.list, function(index, item){ }}
+	<tr id="{{ item.id }}">
+		<td><a href="/index/Article/content/id/{{ item.id }}.html" target="_blank">{{ item.title }}</a></td>
+		<td><a href="/index/Article/content/id/{{ item.id }}.html" target="_blank">{{ item.content }}</a></td>
+		<td>{{ item.create_time }}</td>
+		<td>{{ item.group_name }}</td>
+		<td>
+			<div class="btn-group btn-group-sm">
+				<button type="button" class="btn btn-danger" onclick="javascript:artDel('{{ item.id }}');">删除</button>
+				<a type="button" class="btn btn-info" href="edit.html?id={{ item.id }}">编辑</a>
+				<!--<button type="button" id="setSy-{{ item.id }}" class="btn btn-secondary setSy" onclick="javascript:setSy('{{ item.id }}');">
+					设为首页
+				</button>-->
+			</div>
+		</td>
+	</tr>
+	{{#  }); }}
+</script>
+
+{include file="public/footer"}

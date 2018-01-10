@@ -1,0 +1,268 @@
+{include file="public/header"}
+<style>
+	.webuploader-pick {
+		width: 100% !important;
+		height: 100% !important;
+		border-radius: 8px !important;
+		overflow: visible !important;
+		font-size: large;
+	}
+	
+	.webuploader-pick + div {
+		width: 100% !important;
+		height: 100% !important;
+	}
+</style>
+
+<div class="row">
+	<div class="col-0 col-sm-0 col-md-0 col-lg-1 col-xl-1 ">
+	</div>
+	<div class="col-12 col-sm-12 col-md-12 col-10-10 col-xl-10">
+		<div class="card mt15 mb15">
+			<div class="card-body">
+				<form id="formNews">
+					<input type="hidden" name="id" value="{$ai.id|default=''}">
+					<div class="form-row">
+						<div class="col-12">
+							<div class="input-group mb-3">
+								<label class="input-group-addon" for="title">文章标题</label>
+								<input type="search" class="form-control w100p" id="title" name="title" value="{$ai.title|default=''}" placeholder="请输入文章标题">
+							</div>
+						</div>
+					</div>
+					<div class="form-row">
+						<div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+							<div class="input-group mb-3">
+								<label for="cg1" class="input-group-addon">一级栏目</label>
+								<select class="form-control" id="cg1" name="cg1" >
+									<option value="">--</option>
+									{volist name="glist" id="vo"}
+									{if $ai.cg1==$vo.id}
+									<option value="{$vo.id}" selected>{$vo.title}</option>
+									{else /}
+									<option value="{$vo.id}">{$vo.title}</option>
+									{/if}
+									{/volist}
+								</select>
+							</div>
+						</div>
+						<div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+							<div class="input-group mb-3">
+								<label for="cg2" class="input-group-addon">二级栏目</label>
+								<select class="form-control" id="cg2" name="cg2" >
+									<option value="">--</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="coverSelector">文章封面:</label>
+						<img src="" alt="" id="imgCover" height="200px">
+						<div class="form-control" id="coverSelector"></div>
+					</div>
+					<div class="form-group">
+						<label for="content">文章内容:
+							<small class="text-danger">(可以点击编辑器右上角按钮,进行全屏编辑)</small>
+						</label>
+						<textarea class="form-control" id="content" name="content"></textarea>
+					</div>
+					<div class="text-center">
+						<button type="button" class="btn btn-primary" id="btnAddArticle">修改文章</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--ueditor-->
+<script type="text/javascript" charset="utf-8">
+    window.UEDITOR_HOME_URL = "/static/lib/ueditor/";
+    //UEDITOR_HOME_URL、config、all这三个顺序不能改变
+</script>
+<script type="text/javascript" charset="utf-8" src="/static/lib/ueditor/ueditor.config.js"></script>
+<script type="text/javascript" charset="utf-8" src="/static/lib/ueditor/ueditor.all.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="/static/lib/ueditor/lang/zh-cn/zh-cn.js"></script>
+<script type="text/javascript">
+    var ue = UE.getEditor('content', {
+        UEDITOR_HOME_URL: "/static/lib/ueditor/",
+        serverUrl: "/adm/Common/ueditor",
+        initialFrameWidth: "100%",
+        initialFrameHeight: "100%",
+        maximumWords: 100000,
+    });
+</script>
+
+<link rel="stylesheet" href="/static/lib/webuploader/webuploader.css">
+<script src="/static/lib/webuploader/webuploader.js"></script>
+<script>
+    var imgSrc;
+
+    var upl = WebUploader.create({
+        auto: false,
+        swf: '/static/lib/webuploader/Uploader.swf',
+        server: '/adm/News/apiUplImage',
+        pick: {
+            id: "#coverSelector",
+            multiple: false,
+            innerHTML: "选择封面文件"
+        },
+        accept: {
+            title: 'Images',
+            extensions: 'gif,jpg,jpeg,bmp,png',
+            mimeTypes: 'image/*'
+        },
+        fileSizeLimit: 1024 * 1024 * 50,
+        fileNumLimit: 1,
+        resize: true,
+        compress: {
+            width: 1600,
+            height: 1600,
+
+            // 图片质量，只有type为`image/jpeg`的时候才有效。
+            quality: 80,
+
+            // 是否允许放大，如果想要生成小图的时候不失真，此选项应该设置为false.
+            allowMagnify: false,
+
+            // 是否允许裁剪。
+            crop: false,
+
+            // 是否保留头部meta信息。
+            preserveHeaders: true,
+
+            // 如果发现压缩后文件大小比原来还大，则使用原来图片
+            // 此属性可能会影响图片自动纠正功能
+            noCompressIfLarger: true,
+
+            // 单位字节，如果图片大小小于此值，不会采用压缩。
+            compressSize: 500 * 1024
+        }
+    });
+
+    //验证失败时
+    upl.on('error', function (type) {
+        var str = "";
+        if (type === "Q_EXCEED_NUM_LIMIT") {
+            str = "只能选择一个文件";
+        } else if (type === "Q_EXCEED_SIZE_LIMIT") {
+            str = "文件不能太大";
+        } else if (type === "Q_TYPE_DENIED") {
+            str = "只能选择图片";
+        } else if (type === "F_DUPLICATE") {
+            str = "材料文件重复选择了,请核对";
+        } else {
+            str = "检验未通过( " + type + " )";
+        }
+        layer.alert(str);
+    });
+
+    //文件被加入队列后
+    upl.on('fileQueued', function (file) {
+
+        //预览
+        upl.makeThumb(file, function (error, ret) {
+
+            imgSrc = ret;
+
+            if (error) {
+                return false;
+            }
+            layer.open({
+                title: "封面预览",
+                content: '<img alt="" src="' + ret + '" width="100%" />',
+                area: ['80%', '95%'],
+                closeBtn: 0,
+                btn: ['上传', '重选'],
+                yes: function (index, layero) {
+                    upl.upload();
+                    layer.close(index);
+                }
+                , btn2: function (index, layero) {
+                    upl.removeFile(file, true);
+                }
+            });
+        }, 0.5, 0.5);
+
+    });
+
+    //开始上传时
+    upl.on('startUpload', function (file) {
+        //进度条
+    });
+
+    // 上传过程中
+    upl.on('uploadProgress', function (file, percentage) {
+        //进度条
+        // mui("body").progressbar().setProgress(percentage * 100);
+    });
+
+    //服务器响应时
+    upl.on("uploadAccept", function (object, res) {
+
+        layer.msg(res.msg);
+
+        //结果判断
+        if (res.code != 1) {
+
+            return false;
+        }
+
+        $(".webuploader-pick").html("已上传").attr("disabled", true);
+        $("#coverSelector").html('<img alt="" src="' + imgSrc + '" height="200px;" />');
+        $("#imgCover").remove();
+
+    });
+
+</script>
+
+<script type="text/javascript">
+    var content = '{$ai.content|default=""}';
+    if (content != "") {
+        ue.ready(function () {
+            ue.setContent(content);
+        });
+    }
+
+    getCg2('{$ai.cg1}', '{$ai.cg2}');
+
+    $("#btnAddArticle").click(function () {
+
+        var data = $("#formNews").serializeObject();
+
+        post("/adm/News/apiEdit", data, function (data) {
+            layer.msg("修改成功");
+            setTimeout(function () {
+                location.href = location.href;
+            }, 2000);
+        })
+    });
+
+    $('#cg1').change(function () {
+
+        getCg2($(this).val(), "");
+
+    });
+
+    function getCg2(cg1, cg2) {
+        post("/adm/news/apiGetCG2", {id: cg1}, function (data) {
+            var html = '';
+            html += '<option value="">--</option>';
+            for (x in data) {
+                var str="";
+                if (cg2 == data[x]['id']) {
+                    str = " selected ";
+                }
+                html += "<option" + str + " value=\"" + data[x]['id'] + "\">" + data[x]['title'] + "</option>"
+            }
+            $("#cg2").html(html);
+        });
+    }
+
+    post("/index/Article/getCover", {id: '{$ai.id}'}, function (data) {
+        $("#imgCover").attr("src", data);
+    });
+
+</script>
+
+{include file="public/footer"}

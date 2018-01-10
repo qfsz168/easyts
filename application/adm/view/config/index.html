@@ -1,0 +1,48 @@
+{include file="public/header"}
+
+<div class="row mt-3 mb-3">
+	<div class="col-0 col-sm-0 col-md-0 col-lg-2 col-xl-3"></div>
+	<div class="col-12 col-sm-12 col-md-12 col-lg-8 col-xl-6">
+		<div class="card">
+			<div class="card-body">
+				{volist name="$glist" id="vo"}
+				<form action="">
+					<small class="form-text text-muted">
+						{$vo.mark}
+					</small>
+					<div class="input-group mb-3">
+						<label class="input-group-addon" for="">{$vo.title}</label>
+						<textarea class="form-control" id="{$vo.key}" rows="1">{$vo.value}</textarea>
+						<label class="input-group-addon" for="">
+							<button type="button" class="btn btn-link btn-sm" onclick="javascript:artEdit('{$vo.key}','{$vo.title}');" style="padding: 0;">
+								保存
+							</button>
+						</label>
+					</div>
+				</form>
+				{/volist}
+				<div id="clPage"></div>
+			</div>
+		</div>
+	</div>
+  </div>
+
+<script type="text/javascript">
+
+    function artEdit(key, title) {
+        var value = $("#" + key).val();
+        layer.confirm("要将 " + title + " 的值改为 " + value + " 吗?", function (index) {
+            post("apiEdit", {key: key, value: value}, function () {
+                layer.msg("修改成功");
+                if (key == "admin_pwd") {
+                    location.href = location.href;
+                }
+            });
+
+            layer.close(index);
+        });
+    }
+
+</script>
+
+{include file="public/footer"}

@@ -46,7 +46,7 @@ return [
     // 应用类库后缀
     'class_suffix'           => false,
     // 控制器类后缀
-    'controller_suffix'      => false,
+    'controller_suffix'      => 'Controller',
 
     // 默认模块名
     'default_module'         => 'index',

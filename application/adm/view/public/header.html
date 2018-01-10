@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	
+	<title>后台管理-{$webTitle|default=''}</title>
+	
+	<script src="/static/lib/jquery.js"></script>
+	
+	<script src="/static/lib/layer/layer.js"></script>
+	
+	<link rel="stylesheet" href="/static/lib/font-awesome/css/font-awesome.min.css">
+	
+	<link rel="stylesheet" href="/static/lib/bootstrap/bootstrap.min.css">
+	<script src="/static/lib/bootstrap/popper.min.js"></script>
+	<script src="/static/lib/bootstrap/bootstrap.min.js"></script>
+	
+	<link rel="stylesheet" href="/static/css/frontend/common.css">
+	
+	<script src="/static/js/basic.js"></script>
+	
+</head>
+
+<body>
+
+<!--页眉-->
+<header></header>
+
+<!--导航栏-->
+<nav class="navbar navbar-expand-md bg-light navbar-light bgc-nav">
+	<a class="navbar-brand bgc-nav" href="#" style="margin-right: 30px;">
+		<img src="/static/img/logo.png" height="80"/></head>
+	</a>
+	
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+	
+	<div class="collapse navbar-collapse bgc-nav" id="collapsibleNavbar">
+		<ul class="navbar-nav">
+			<li class="nav-item active" data-nav-no="0">
+				<a class="nav-link" href="/adm/Index/index.html">管理中心</a>
+			</li>
+			<li class="nav-item dropdown" data-nav-no="1">
+				<a class="nav-link dropdown-toggle" href="/adm/Category/index.html" data-toggle="dropdown">
+					栏目管理
+				</a>
+				<div class="dropdown-menu">
+					<a class="dropdown-item" href="/adm/Category/index.html">列表</a>
+					<a class="dropdown-item" href="/adm/Category/add.html">添加</a>
+				</div>
+			</li>
+			<li class="nav-item dropdown" data-nav-no="2">
+				<a class="nav-link dropdown-toggle" href="/adm/News/index.html" data-toggle="dropdown">
+					文章管理
+				</a>
+				<div class="dropdown-menu">
+					<a class="dropdown-item" href="/adm/News/index.html">列表</a>
+					<a class="dropdown-item" href="/adm/News/add.html">添加</a>
+				</div>
+			</li>
+			<li class="nav-item " data-nav-no="3">
+				<a class="nav-link" href="/adm/Config/index.html">网站设置</a>
+			</li>
+			<li class="nav-item " data-nav-no="99">
+				<a class="nav-link" href="javascript:" id="navQuit">安全退出</a>
+			</li>
+		</ul>
+	</div>
+</nav>
+
+<script>
+
+    //导航栏
+    var activeNavNo = "{$activeNavNo|default=0}";
+    $("#collapsibleNavbar .nav-item").each(function () {
+        if ($(this).attr("data-nav-no") == activeNavNo) {
+            $(this).addClass("active").siblings().removeClass("active");
+        }
+    });
+
+    //退出
+    $("#navQuit").click(function () {
+        layer.confirm('确定要退出吗', function (index) {
+            location.href = "/adm/Admin/quit.html";
+            layer.close(index);
+        });
+
+    });
+
+
+</script>
+
+<!--内容-->
+<section class="container-fluid">
+	<div class="row">
+		<div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 bgc-content">
+			<!--未封闭的标签在footer.html中-->
