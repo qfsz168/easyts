@@ -1,6 +1,6 @@
 <?php
-$db     = new swoole_mysql;
-$server = [
+$swoole_mysql = new swoole_mysql;
+$server       = [
     'host'     => 'localhost',
     'port'     => 3306,
     'user'     => 'root',
@@ -12,9 +12,9 @@ $server = [
     // 可选：连接超时时间（非查询超时时间），默认为SW_MYSQL_CONNECT_TIMEOUT（1.0）
 ];
 
-$db->connect($server, "sql");
+$swoole_mysql->connect($server, "sql");
 
-$db->on('close', function () use ($db)
+$swoole_mysql->on('close', function () use ($swoole_mysql)
 {
     echo "--mysql is closed.\n";
 });
@@ -29,7 +29,7 @@ $db->on('close', function () use ($db)
  */
 function sql($db, $r) {
     if ($r === false) {
-        die($db->connect_errno."--". $db->connect_error);
+        die($db->connect_errno."--".$db->connect_error);
     }
     $sql = 'show tables';
     $db->query($sql, function (swoole_mysql $db, $r)

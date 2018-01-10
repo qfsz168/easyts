@@ -6,21 +6,63 @@ $serv = new swoole_server("0.0.0.0", 9501);
 //监听连接进入事件
 $serv->on('connect', function ($serv, $fd)
 {
-    //echo "Client: Connect.\n";
     $serv->send($fd, "1");
 });
 
 //监听数据发送事件
 $serv->on('receive', function ($serv, $fd, $from_id, $data)
 {
-    global $a;
-    if (!isset($a)) {
-        $a = 1;
-    }
-    $a++;
-    echo $a."\r\n";
 
-    //    $serv->send($fd, "Server: ".$fd.'-----'.$data);
+    $cli = new swoole_http_client('127.0.0.1', 8282);
+
+    $cli->on('message', function ($_cli, $frame)
+    {
+    });
+
+    $cli->upgrade('/', function ($cli)
+    {
+    });
+
+    $cli->push($data);
+
+    $swoole_mysql = new swoole_mysql;
+    $server       = [
+        'host'     => 'localhost',
+        'port'     => 3306,
+        'user'     => 'easytest',
+        'password' => 'Rm.123456',
+        'database' => 'db_easytest',
+        'charset'  => 'utf8',
+        'timeout'  => 2,
+    ];
+
+    $swoole_mysql->connect($server, function ($db, $r) use ($data, $fd)
+    {
+        $now = date("Y-m-d H:i:s");
+
+        if ($r === false) {
+            myLog($db->connect_errno." -- ".$db->connect_error);
+
+            return;
+        }
+
+        $sql = "INSERT INTO `ts_data` (`raw`,`create_time`,`fd`) VALUES ('{$data}','{$now}','{$fd}');";
+        $db->query($sql, function (swoole_mysql $db, $r)
+        {
+            if ($r === false) {
+                myLog($db->error);
+            } elseif ($r === true) {
+            }
+
+            $db->close();
+        });
+
+    });
+
+    $swoole_mysql->on('close', function () use ($swoole_mysql)
+    {
+    });
+
     $serv->send($fd, "2");
 });
 
@@ -30,57 +72,17 @@ $serv->on('close', function ($serv, $fd)
     echo "Client: Close.\n";
 });
 
-
-$db     = new swoole_mysql;
-$server = [
-    'host'     => 'localhost',
-    'port'     => 3306,
-    'user'     => 'root',
-    'password' => 'Rm.123456',
-    'database' => 'easyts',
-    'charset'  => 'utf8',
-    //指定字符集
-    'timeout'  => 2,
-    // 可选：连接超时时间（非查询超时时间），默认为SW_MYSQL_CONNECT_TIMEOUT（1.0）
-];
-$db->connect($server, function ($db, $r) use ($data)
-{
-    if ($r === false) {
-        echo $db->connect_errno." -- ".$db->connect_error."\n";
-
-        return;
-    }
-
-    $sql = "INSERT INTO `data` (`raw`) VALUES ({$data});";
-    $db->query($sql, function (swoole_mysql $db, $r)
-    {
-        var_dump($r);
-        if ($r === false) {
-            var_dump($db->error, $db->errno);
-        } elseif ($r === true) {
-            var_dump($db->affected_rows, $db->insert_id);
-        }
-
-        $db->close();
-    });
-    $sql = "INSERT INTO `data` (`raw`) VALUES ({$data});";
-    $db->query($sql, function (swoole_mysql $db, $r)
-    {
-        var_dump($r);
-        if ($r === false) {
-            var_dump($db->error, $db->errno);
-        } elseif ($r === true) {
-            var_dump($db->affected_rows, $db->insert_id);
-        }
-
-        $db->close();
-    });
-});
-
-$db->on('close', function () use ($db)
-{
-    echo "--mysql is closed.\n";
-});
-
 //启动服务器
 $serv->start();
+
+function myLog($str) {
+    $now = date("Y-m-d H:i:s");
+
+    if (is_array($str)) {
+        $str = var_export($str, true);
+    }
+    if (!is_string($str)) {
+        return;
+    }
+    echo $now."\r\n".$str."\r\n\r\n";
+}
