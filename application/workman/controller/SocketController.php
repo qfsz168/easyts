@@ -7,6 +7,7 @@
 
 namespace app\workman\controller;
 
+use Workerman\Lib\Timer;
 use Workerman\Worker;
 use GatewayWorker\BusinessWorker;
 use GatewayWorker\Gateway;
@@ -29,6 +30,8 @@ class SocketController
     private $_gatewayReady = false;
 
     public function __construct() {
+
+        $this->fileMonitor();
 
         $this->flashPolicy();
 
@@ -152,6 +155,48 @@ class SocketController
         };
     }
 
+    protected function fileMonitor() {
+
+        // worker
+        $worker             = new Worker();
+        $worker->name       = 'FileMonitor';
+        $worker->reloadable = false;
+        $last_mtime         = time();
+
+        $worker->onWorkerStart = function () use ($last_mtime)
+        {
+            // watch files only in daemon mode
+            if (Worker::$daemonize) {
+                return;
+            }
+
+            // chek mtime of files per second1
+            Timer::add(1, function ($monitor_dir) use ($last_mtime)
+            {
+                global $last_mtime;
+                // recursive traversal directory
+                $dir_iterator = new \RecursiveDirectoryIterator($monitor_dir);
+                $iterator     = new \RecursiveIteratorIterator($dir_iterator);
+                foreach ($iterator as $file) {
+                    // only check php files
+                    if (pathinfo($file, PATHINFO_EXTENSION) != 'php') {
+                        continue;
+                    }
+                    // check mtime
+                    if ($last_mtime < $file->getMTime()) {
+                        echo $file." update and reload\n";
+                        // send SIGUSR1 signal to master process for reload
+                        posix_kill(posix_getppid(), SIGUSR1);
+                        $last_mtime = $file->getMTime();
+                        break;
+                    }
+                }
+            }, [realpath(__DIR__.'/..')]);
+
+        };
+
+
+    }
 
     private function checkGatewayReady() {
         if (!$this->_gatewayReady) {
@@ -162,5 +207,6 @@ class SocketController
 
         return true;
     }
+
 
 }
