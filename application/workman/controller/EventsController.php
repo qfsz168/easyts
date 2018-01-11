@@ -37,7 +37,7 @@ class EventsController
      */
     public static function onMessage($client_id, $message) {
         //		Gateway::sendToClient($client_id, "you say :{$message}");
-        Gateway::sendToAll("{$client_id} say :{$message}");
+        Gateway::sendToAll(date("m-d H:i:s")." {$client_id} say : {$message}");
     }
 
     /**
