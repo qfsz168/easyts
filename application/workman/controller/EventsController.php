@@ -6,6 +6,7 @@
  */
 
 //declare(ticks=1);
+use app\workman\controller\SocketController;
 use \GatewayWorker\Lib\Gateway;
 
 /**
@@ -36,11 +37,21 @@ class EventsController
      * @param mixed $message   具体消息
      */
     public static function onMessage($client_id, $message) {
-        //		Gateway::sendToClient($client_id, "you say :{$message}");
-
+        $message = trim($message, "\n");
+        $data    = json_decode($message, true);
         try {
-            Gateway::sendToAll(date("m-d H:i:s")." {$client_id} say : {$message}");
+            if (isset($data["type"]) && $data["type"] == SocketController::DATA_TYPE_NAME_TCP) {
+                db("data")->insert([
+                    "raw"         => $message,
+                    "client_id"   => $client_id,
+                    "sn"          => $data["sn"],
+                    "create_time" => date("Y-m-d H:i:s"),
+                ]);
+
+                Gateway::sendToAll(date("H:i:s")." : {$data["data"]}");
+            }
         } catch (\Exception $e) {
+            echo $e->getMessage()."\n";
         }
 
     }

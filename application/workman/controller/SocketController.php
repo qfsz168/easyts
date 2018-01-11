@@ -27,11 +27,13 @@ class SocketController
     const TCP2WS_INNER_PORT_BEGIN  = 2800;
     const GATEWAY_INNER_PORT_BEGIN = 4000;
 
+    const DATA_TYPE_NAME_TCP = "tcp_client";
+
     private $_gatewayReady = false;
 
     public function __construct() {
 
-        $this->fileMonitor();
+        //$this->fileMonitor();
 
         $this->flashPolicy();
 
@@ -137,9 +139,14 @@ class SocketController
                 }
             }
             // 模拟超级用户，以文本协议发送数据，注意Text文本协议末尾有换行符（发送的数据中最好有能识别超级用户的字段），这样在Event.php中的onMessage方法中便能收到这个数据，然后做相应的处理即可
-            socket_write($socket, "(tcp client) ".$message."\n");
-
-            //$connection->send("you said :$message\r\n".$connection->getRemoteIp().":".$connection->getRemotePort()."\r\n");
+            $data = json_encode([
+                "type"        => self::DATA_TYPE_NAME_TCP,
+                "data"        => $message,
+                "sn"          => "T000001",
+                "remote_ip"   => ip2long($connection->getRemoteIp()),
+                "remote_port" => $connection->getRemotePort(),
+            ], JSON_UNESCAPED_UNICODE);
+            socket_write($socket, $data."\n");
         };
 
         return $this;
