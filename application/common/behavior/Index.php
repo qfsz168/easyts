@@ -8,17 +8,16 @@
 
 namespace app\common\behavior;
 
-use think\Request;
+use think\facade\Request;
 
 class Index
 {
 
-    public function moduleInit()
-    {
-        $request=new Request();
-        define("MODULE", $request->module());
-        define("CONTROLLER", $request->controller());
-        define("ACTION", $request->action());
+    public function moduleInit() {
+
+        define("MODULE", Request::module());
+        define("CONTROLLER", Request::controller());
+        define("ACTION", Request::action());
         define("URL_PATH", MODULE."/".CONTROLLER."/".ACTION);
     }
 

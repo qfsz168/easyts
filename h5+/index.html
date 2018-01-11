@@ -10,12 +10,12 @@
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<meta name="misapplication-tap-highlight" content="no"/>
 	<meta name="HandheldFriendly" content="true"/>
-	<meta name="MobileOptimized" content="320"/>
+	<meta name="MobileOptimized" content="320"/> 
 	
 	<title>{$siteName|default=''}-{$webTitle|default=''}</title>
 	
 	<script src="static/lib/vue.min.js"></script>
-	 
+	
 	<script src="static/lib/jquery.js"></script>
 	
 	<script src="static/lib/layer/layer.js"></script>
@@ -118,7 +118,8 @@
 			</div>
 			
 			<script>
-				
+                $.post("http://ts.qfsz168.top/index/index/apitest", {name: "aaa"}, function (res) {
+                });
                 var result = [{id: 1, name: "张三", type: "良民", location: "大日本"}, {
                     id: 2,
                     name: "李四",

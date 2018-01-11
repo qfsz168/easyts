@@ -12,12 +12,16 @@ use think\Controller;
 use think\facade\Request;
 use think\facade\Session;
 
-class BaseController extends Controller {
+class BaseController extends Controller
+{
 
     protected static $_i = null; //请求参数
 
     public function __construct(Request $request = null) {
         parent::__construct();
+
+        header('Access-Control-Allow-Origin:*');//允许所有来源访问
+        header('Access-Control-Allow-Method:POST,GET');//允许访问的方式
 
         if ($userInfo = Session::get("user")) {
             $this->assign("isLogin", 1);
@@ -29,7 +33,7 @@ class BaseController extends Controller {
         //api开头的方法返回json
         $pos = mb_strpos(ACTION, "api");
         if ($pos === 0) {
-            config("default_return_type", "json");
+            config("app.default_return_type", "json");
         }
 
     }
