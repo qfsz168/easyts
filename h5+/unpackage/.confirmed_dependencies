@@ -1,0 +1,71 @@
+{
+  "index.html": {
+    "refer": [
+      "plus/accelerometer.html",
+      "plus/njs.html",
+      "plus/zip.html",
+      "plus/camera.html",
+      "plus/audio.html",
+      "plus/device.html",
+      "plus/events.html",
+      "plus/maps.html",
+      "plus/payment.html",
+      "plus/runtime.html",
+      "plus/xhr.html",
+      "plus/webview.html",
+      "plus/share.html",
+      "plus/proximity.html",
+      "plus/orientation.html",
+      "plus/oauth.html",
+      "plus/navigator.html",
+      "about.html"
+    ],
+    "resources": [
+      "/static/css/frontend/common.css",
+      "/static/lib/bootstrap/popper.min.js",
+      "/static/img/logo.png",
+      "/static/js/basic.js",
+      "/static/lib/jquery.js",
+      "/static/lib/font-awesome/css/font-awesome.min.css",
+      "/static/lib/layer/layer.js",
+      "/static/lib/bootstrap/bootstrap.min.css",
+      "/static/lib/bootstrap/bootstrap.min.js"
+    ]
+  },
+  "plus/accelerometer.html": {
+    "refer": [
+      "plus/accelerometer_shake.html"
+    ]
+  },
+  "plus/maps_map.html": {
+    "resources": [
+      "plus/maps_map_sub.html"
+    ],
+    "refer": [
+      "plus/maps_map_sub.html"
+    ]
+  },
+  "plus/maps.html": {
+    "refer": [
+      "plus/maps_map.html"
+    ]
+  },
+  "plus/webview_animation.html": {
+    "refer": [
+      "plus/webview_new.html"
+    ]
+  },
+  "plus/webview.html": {
+    "refer": [
+      "plus/webview_embed.html",
+      "plus/webview_animation.html",
+      "plus/webview_pulltorefresh.html",
+      "plus/webview_float.html"
+    ]
+  },
+  "plus/orientation.html": {
+    "refer": [
+      "plus/orientation_compass.html"
+    ]
+  }
+}
