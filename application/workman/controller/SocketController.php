@@ -7,7 +7,6 @@
 
 namespace app\workman\controller;
 
-use function PHPSTORM_META\type;
 use Workerman\Worker;
 use GatewayWorker\BusinessWorker;
 use GatewayWorker\Gateway;
@@ -27,7 +26,22 @@ class SocketController
     const TCP2WS_INNER_PORT_BEGIN  = 2800;
     const GATEWAY_INNER_PORT_BEGIN = 4000;
 
+    private $_gatewayReady = false;
+
     public function __construct() {
+
+        $this->flashPolicy();
+
+        $this->registerAndBussiness()
+            ->websocketServer();
+
+        $this->tcp2ws()
+            ->TcpServer();
+
+        Worker::runAll();
+    }
+
+    protected function registerAndBussiness() {
         //【1.1】register 服务必须是text协议
         $register       = new Register('text://127.0.0.1:'.self::REGISTER_PORT);
         $register->name = "gateway_register";
@@ -38,6 +52,17 @@ class SocketController
         $worker->count           = 4; // bussinessWorker进程数量
         $worker->eventHandler    = "EventsController"; //事件处理类，默认是 Event 类
         $worker->registerAddress = '127.0.0.1:'.self::REGISTER_PORT; // 服务注册地址
+
+        $this->_gatewayReady = true;
+
+        return $this;
+    }
+
+    protected function websocketServer() {
+
+        if (!$this->checkGatewayReady()) {
+            return false;
+        }
 
         //【1.3】websocket_server 进程
         $gateway        = new Gateway("websocket://0.0.0.0:".self::WS_PORT);
@@ -72,6 +97,14 @@ class SocketController
             };
         };
 
+        return $this;
+    }
+
+    protected function tcp2ws() {
+        if (!$this->checkGatewayReady()) {
+            return false;
+        }
+
         //【2】 内部推送端口 tcp->ws
         $internal_gateway            = new Gateway("Text://127.0.0.1:".self::TCP2WS_PORT);
         $internal_gateway->name      = 'tcp->ws';
@@ -79,6 +112,11 @@ class SocketController
         $internal_gateway->startPort = self::TCP2WS_INNER_PORT_BEGIN;
         // register 服务监听的端口，默认是1236
         $internal_gateway->registerAddress = '127.0.0.1:'.self::REGISTER_PORT;
+
+        return $this;
+    }
+
+    protected function TcpServer() {
 
         //【3】Tcp server 进程
         $tcp            = new Worker('tcp://0.0.0.0:'.self::TCP_PORT);
@@ -101,6 +139,10 @@ class SocketController
             //$connection->send("you said :$message\r\n".$connection->getRemoteIp().":".$connection->getRemotePort()."\r\n");
         };
 
+        return $this;
+    }
+
+    protected function flashPolicy() {
         //【4】flashSocket 授权 进程
         $flash_policy            = new Worker('tcp://0.0.0.0:843');
         $flash_policy->name      = "flash_policy";
@@ -108,8 +150,17 @@ class SocketController
         {
             $connection->send('<?xml version="1.0"?><cross-domain-policy><site-control permitted-cross-domain-policies="all"/><allow-access-from domain="*" to-ports="*"/></cross-domain-policy>'."\0");
         };
+    }
 
-        Worker::runAll();
+
+    private function checkGatewayReady() {
+        if (!$this->_gatewayReady) {
+            echo "gateway not ready";
+
+            return false;
+        }
+
+        return true;
     }
 
 }
