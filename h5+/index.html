@@ -37,7 +37,7 @@
 <nav class="navbar navbar-expand-md bg-dark navbar-dark bgc-nav">
 	<a class="navbar-brand bgc-nav" href="javascript:">
 		<img src="static/img/logo.png" height="35px"/>
-		<span style="padding-left:1rem ;">物联网服务器</span> 
+		<span style="padding-left:1rem ;">物联网服务器</span>
 	</a>
 	
 	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
@@ -78,50 +78,60 @@
                 var ws = new WebSocket("ws://ts.qfsz168.top:8933");
 
                 ws.onopen = function () {
-                    $("#wasytestList").prepend("<p>websocket连接成功</p>");
+                    $("#wasytestList").prepend("<div class=\"alert alert-success alert-dismissable\">" +
+                        "    <button type=\"button\" class=\"close\" data-dismiss=\"alert\">&times;</button>" +
+                        "    websocket连接成功" +
+                        "  </div>");
                     ws.send("hello");
                 };
 
                 ws.onmessage = function (evt) {
-                    $("#wasytestList").prepend("<p>" + evt.data + "</p>");
+                    console.log("<p>" + evt.data + "</p>");
                 };
 
                 ws.onclose = function (evt) {
-                    $("#wasytestList").prepend("<p>websocket连接断开</p>");
+                    $("#wasytestList").prepend("<div class=\"alert alert-warning alert-dismissable\">" +
+                        "    <button type=\"button\" class=\"close\" data-dismiss=\"alert\">&times;</button>" +
+                        "    websocket连接断开" +
+                        "  </div>");
                 };
 
                 ws.onerror = function (evt) {
-                    $("#wasytestList").prepend("<p>websocket连接失败</p>");
+                    $("#wasytestList").prepend("<div class=\"alert alert-danger alert-dismissable\">" +
+                        "    <button type=\"button\" class=\"close\" data-dismiss=\"alert\">&times;</button>" +
+                        "    websocket连接失败" +
+                        "  </div>");
                 };
-			</script>
-			
-			
-			<div id="main">
-				<ul>
-					<li v-for="r in rows">
-						<p>{{r.id}}--{{r.name}}--{{r.type}}--{{r.location}}</p>
-					</li>
-				</ul>
-			</div>
-			
-			<script>
-                $.post("http://ts.qfsz168.top/index/index/apitest", {name: "aaa"}, function (res) {
-                });
-                var result = [{id: 1, name: "张三", type: "良民", location: "大日本"}, {
-                    id: 2,
-                    name: "李四",
-                    type: "党员",
-                    location: "天朝"
-                }];
-                var v = new Vue({
-                    el: '#main',
-                    data: {
-                        rows: result
-                    }
-                })
 			
 			</script>
-			
+			<!--
+				
+				<div id="main">
+					<ul>
+						<li v-for="r in rows">
+							<p>{{r.id}}&#45;&#45;{{r.name}}&#45;&#45;{{r.type}}&#45;&#45;{{r.location}}</p>
+						</li>
+					</ul>
+				</div>
+				
+				<script>
+					$.post("http://ts.qfsz168.top/index/index/apitest", {name: "aaa"}, function (res) {
+					});
+					var result = [{id: 1, name: "张三", type: "良民", location: "大日本"}, {
+						id: 2,
+						name: "李四",
+						type: "党员",
+						location: "天朝"
+					}];
+					var v = new Vue({
+						el: '#main',
+						data: {
+							rows: result
+						}
+					})
+				
+				</script>
+				-->
 			
 			<!--开始标签在header.html中-->
 		</div>
