@@ -9,8 +9,6 @@ class IndexController extends BaseController
     }
 
     public function index() {
-        halt(input("a", 111, "aa"));
-        widget("index", ["a" => 2]);
 
         return view();
     }
