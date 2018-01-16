@@ -41,7 +41,7 @@ class EventsController
         $data    = json_decode($message, true);
         try {
             if (isset($data["type"]) && $data["type"] == SocketController::DATA_TYPE_NAME_TCP) {
-                db("data")->insert([
+                db("data",[],false)->insert([
                     "raw"         => $message,
                     "client_id"   => $client_id,
                     "sn"          => $data["sn"],

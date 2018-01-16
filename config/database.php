@@ -25,7 +25,9 @@ return [
     // 连接dsn
     'dsn'             => '',
     // 数据库连接参数
-    'params'          => [],
+    'params'          => [
+        \PDO::ATTR_PERSISTENT   => true,
+    ],
     // 数据库编码默认采用utf8
     'charset'         => 'utf8',
     // 数据库表前缀
@@ -52,4 +54,6 @@ return [
     'sql_explain'     => false,
     // Query类
     'query'           => '\\think\\db\\Query',
+    //断线重连机制
+    'break_reconnect' => true,
 ];
