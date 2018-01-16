@@ -124,7 +124,19 @@ class SocketController
     protected function TcpServer() {
 
         //【3】Tcp server 进程
-        $tcp            = new Worker('tcp://0.0.0.0:'.self::TCP_PORT);
+
+        // 证书最好是申请的证书
+        $context = [
+            'ssl' => [
+                'local_cert'  => '/etc/nginx/conf.d/ssl/server.pem',
+                // 也可以是crt文件
+                'local_pk'    => '/etc/nginx/conf.d/ssl/server.key',
+                'verify_peer' => false,
+            ],
+        ];
+
+        $tcp            = new Worker('tcp://0.0.0.0:'.self::TCP_PORT, $context);// 这里设置的是websocket协议，也可以http协议或者其它协议
+        $tcp->transport = 'ssl';// 设置transport开启ssl
         $tcp->name      = "tcp_server";
         $tcp->count     = 4;
         $tcp->onMessage = function ($connection, $message)
